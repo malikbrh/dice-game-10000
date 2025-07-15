@@ -25,18 +25,20 @@ Implémentation complète du jeu de dés Farkle (10000) en Python avec interface
 
 ## 🚀 Installation
 
+0. Pré-requis : Python 3.10+ (testé avec 3.13.5), pip, pip-compile (`pip install pip-tools`)
+
 1. Clonez le repository :
 ```bash
 git clone <votre-repo-url>
 cd dice-game-10000
 ```
 
-2. Installez les dépendances :
+1. Installez les dépendances :
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Lancez le jeu :
+1. Lancez le jeu :
 ```bash
 python src/main.py
 ```
