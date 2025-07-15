@@ -44,16 +44,17 @@ python src/main.py
 ## 📁 Structure du projet
 
 ```
-dice-game-10000/src/
-├── main.py              # Point d'entrée principal
-├── model/
-│   ├── player.py        # Gestion des joueurs
-│   ├── dice.py          # Gestion des dés et scoring
-│   ├── game.py          # Logique principale du jeu
-├── state/
-│   ├── game_state.py    # Sauvegarde/chargement des parties en JSON
-├── view/
-│   ├── cli.py           # Interface utilisateur CLI
+dice-game-10000/
+├── src/
+│   ├── main.py              # Point d'entrée principal
+│   ├── model/
+│   │   ├── player.py        # Gestion des joueurs
+│   │   ├── dice.py          # Gestion des dés et scoring
+│   │   └── game.py          # Logique principale du jeu
+│   ├── state/
+│   │   └── game_state.py    # Sauvegarde/chargement des parties en JSON
+│   └── view/
+│       └── cli.py           # Interface utilisateur CLI
 ├── saves/               # Dossier des sauvegardes (auto-créé)
 ├── requirements.in      # Dépendances sources
 └── requirements.txt     # Dépendances générées (pip-compile)
@@ -69,7 +70,7 @@ dice-game-10000/src/
 
 ### Pendant le jeu
 - **Lancer les dés** - Lance les dés disponibles
-- **Banker le score** - Transfère le score du tour au total, potentiellement relancé par le prochain joueur
+- **Stopper le tour** - Transfère le score du tour au total, potentiellement relancé par le prochain joueur
 - **Sauvegarder** - Sauvegarde la partie actuelle
 - **Voir le classement** - Affiche le classement des joueurs
 - **Quitter** - Quitte la partie
