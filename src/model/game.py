@@ -165,8 +165,6 @@ class FarkleGame:
         current_player.turn_score = 0
         current_player.banked_dice = []
         
-        # Reset les dés partagés - nouveau tour avec 6 dés
-        self.shared_banked_dice = []
         
         # Marquer qu'un joueur a "stoppé"
         self.last_player_banked = True
