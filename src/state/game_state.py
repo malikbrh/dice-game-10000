@@ -149,7 +149,10 @@ class GameState:
             'shared_banked_dice': game.shared_banked_dice,
             'last_player_banked': game.last_player_banked,
             'turn_score_to_transfer': game.turn_score_to_transfer,
-            'version': '1.3'
+            'final_round_started': game.final_round_started,
+            'final_round_triggerer': game.final_round_triggerer.name if game.final_round_triggerer else None,
+            'final_round_players_remaining': game.final_round_players_remaining,
+            'version': '1.5'
         }
     
     def import_game_data(self, data: Dict[str, Any]):
@@ -160,7 +163,7 @@ class GameState:
             data: Dictionnaire contenant les données du jeu
         
         Returns:
-            Tuple (players, current_player_index, game_over, winner, turn_count, last_dice_roll, shared_banked_dice, last_player_banked, turn_score_to_transfer)
+            Tuple (players, current_player_index, game_over, winner, turn_count, last_dice_roll, shared_banked_dice, last_player_banked, turn_score_to_transfer, final_round_started, final_round_triggerer, final_round_players_remaining)
         """
         from model.player import Player
         
@@ -184,5 +187,12 @@ class GameState:
         shared_banked_dice = data.get('shared_banked_dice', [])
         last_player_banked = data.get('last_player_banked', False)
         turn_score_to_transfer = data.get('turn_score_to_transfer', 0)
+        final_round_started = data.get('final_round_started', False)
         
-        return players, current_player_index, game_over, winner, turn_count, last_dice_roll, shared_banked_dice, last_player_banked, turn_score_to_transfer 
+        final_round_triggerer = None
+        if data.get('final_round_triggerer') and players:
+            final_round_triggerer = next((p for p in players if p.name == data['final_round_triggerer']), None)
+        
+        final_round_players_remaining = data.get('final_round_players_remaining', 0)
+        
+        return players, current_player_index, game_over, winner, turn_count, last_dice_roll, shared_banked_dice, last_player_banked, turn_score_to_transfer, final_round_started, final_round_triggerer, final_round_players_remaining 

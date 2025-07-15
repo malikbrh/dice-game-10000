@@ -58,7 +58,19 @@ class FarkleCLI:
         
         # Ligne colorée pour séparer les tours
         print(f"\n{Fore.MAGENTA}{'='*50}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}Tour {status['turn_count']} - Joueur: {Fore.YELLOW}{status['current_player']}{Style.RESET_ALL}")
+        
+        # Afficher si c'est le dernier tour
+        if status['final_round_started']:
+            remaining_players = status['final_round_players_remaining']
+            if remaining_players > 0:
+                print(f"{Fore.RED}{Style.BRIGHT}🚨 DERNIER TOUR - {status['final_round_triggerer']} a atteint 10,000 points!{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}   Joueurs restants: {remaining_players}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}{Style.BRIGHT}🏁 DERNIER TOUR TERMINÉ - Calcul du gagnant...{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}Tour {status['turn_count']} - Joueur: {Fore.YELLOW}{status['current_player']}{Style.RESET_ALL}")
+        else:
+            print(f"{Fore.CYAN}Tour {status['turn_count']} - Joueur: {Fore.YELLOW}{status['current_player']}{Style.RESET_ALL}")
+        
         # Ligne colorée pour séparer les tours
         print(f"{Fore.MAGENTA}{'='*50}{Style.RESET_ALL}")
         
@@ -67,7 +79,14 @@ class FarkleCLI:
         for player_info in status['players']:
             board_status = "" if player_info['is_on_board'] else "✗ pas encore dans le jeu (-800)"
             color = Fore.GREEN if player_info['name'] == status['current_player'] else Fore.WHITE
-            print(f"{color}  {player_info['name']}: {player_info['total_score']} pts "
+            
+            # Marquer le joueur qui a déclenché le dernier tour
+            if status['final_round_started'] and player_info['name'] == status['final_round_triggerer']:
+                winner_mark = "👑 "
+            else:
+                winner_mark = "  "
+            
+            print(f"{color}{winner_mark}{player_info['name']}: {player_info['total_score']} pts "
                   f"(tour: {player_info['turn_score']}) {f'[{board_status}]' if board_status else ''}{Style.RESET_ALL}")
         
         # Afficher le score à transférer (piggy-back)
@@ -194,6 +213,14 @@ class FarkleCLI:
         print("  • En cas de FARKLE, le joueur perd tout (y compris le score hérité)")
         print("  • Le score hérité est ajouté dès que le joueur lance les dés")
         
+        print(f"\n{Fore.YELLOW}🏁 Dernier Tour:{Style.RESET_ALL}")
+        print("  • Dès qu'un joueur atteint/dépasse 10,000 points, le dernier tour commence")
+        print("  • Tous les autres joueurs ont droit à un tour supplémentaire")
+        print("  • Le dernier tour ne se déclenche qu'une seule fois")
+        print("  • Même si plusieurs joueurs dépassent 10,000 pendant le dernier tour")
+        print("  • À la fin du dernier tour, le joueur avec le score le plus élevé gagne")
+        print("  • Les joueurs peuvent se rattraper grâce au piggy-back!")
+        
         input(f"\n{Fore.CYAN}Appuyez sur Entrée pour continuer...{Style.RESET_ALL}")
     
     def show_load_menu(self):
@@ -318,9 +345,21 @@ class FarkleCLI:
     
     def play_game(self):
         """Boucle principale du jeu"""
+        final_round_message_shown = False
+        
         while not self.game.game_over:
             self.clear_screen()
             self.print_title()
+            
+            # Afficher un message spécial quand le dernier tour commence
+            if self.game.final_round_started and not final_round_message_shown:
+                print(f"\n{Fore.RED}{Style.BRIGHT}🚨 DERNIER TOUR DÉCLENCHÉ!{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}   {self.game.final_round_triggerer.name} a atteint 10,000 points!{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}   Tous les autres joueurs ont droit à un tour pour le rattraper.{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}   Attention: Le dernier tour ne se déclenchera qu'une seule fois!{Style.RESET_ALL}")
+                input(f"\n{Fore.CYAN}Appuyez sur Entrée pour continuer...{Style.RESET_ALL}")
+                final_round_message_shown = True
+            
             self.print_game_status()
             
             current_player = self.game.get_current_player()
@@ -349,9 +388,18 @@ class FarkleCLI:
                         print(f"{Fore.RED}❌ Vous ne pouvez pas stopper pour une raison inconnue.{Style.RESET_ALL}")
                 else:
                     score_to_transfer = current_player.turn_score
+                    total_score_before = current_player.total_score
+                    
                     if self.game.stop_turn():
-                        print(f"{Fore.GREEN}✓ Tour stoppé! Score gardé et transféré: {score_to_transfer} points{Style.RESET_ALL}")
-                        print(f"{Fore.YELLOW}   Le joueur suivant héritera de ce score s'il est sur le plateau.{Style.RESET_ALL}")
+                        # Vérifier si le joueur vient de déclencher le dernier tour
+                        if self.game.final_round_started and self.game.final_round_triggerer == current_player and not final_round_message_shown:
+                            print(f"{Fore.GREEN}✓ Tour stoppé! Score gardé: {score_to_transfer} points{Style.RESET_ALL}")
+                            print(f"{Fore.RED}{Style.BRIGHT}🎉 FÉLICITATIONS! Vous avez atteint 10,000 points!{Style.RESET_ALL}")
+                            print(f"{Fore.RED}   Votre score final: {current_player.total_score} points{Style.RESET_ALL}")
+                            print(f"{Fore.YELLOW}   Le dernier tour commence maintenant!{Style.RESET_ALL}")
+                        else:
+                            print(f"{Fore.GREEN}✓ Tour stoppé! Score gardé et transféré: {score_to_transfer} points{Style.RESET_ALL}")
+                            print(f"{Fore.YELLOW}   Le joueur suivant héritera de ce score s'il est sur le plateau.{Style.RESET_ALL}")
                     else:
                         print(f"{Fore.RED}❌ Erreur lors de l'arrêt du tour.{Style.RESET_ALL}")
                 input(f"{Fore.CYAN}Appuyez sur Entrée pour continuer...{Style.RESET_ALL}")
@@ -364,13 +412,36 @@ class FarkleCLI:
                 if confirm.lower() in ['o', 'oui', 'y', 'yes']:
                     return
         
-        # Fin de partie
+        # Fin de partie - Affichage du classement final
         self.clear_screen()
         self.print_title()
-        print(f"\n{Fore.GREEN}🎉 PARTIE TERMINÉE!{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}🏆 Gagnant: {self.game.winner.name} avec {self.game.winner.total_score} points!{Style.RESET_ALL}")
+        print(f"\n{Fore.GREEN}{Style.BRIGHT}🎉 PARTIE TERMINÉE!{Style.RESET_ALL}")
+        print(f"{Fore.RED}🏆 GAGNANT: {self.game.winner.name} avec {self.game.winner.total_score} points!{Style.RESET_ALL}")
         
-        self.show_leaderboard()
+        # Afficher le classement final complet
+        print(f"\n{Fore.CYAN}🏆 CLASSEMENT FINAL:{Style.RESET_ALL}")
+        print(f"{Fore.MAGENTA}{'='*40}{Style.RESET_ALL}")
+        
+        leaderboard = self.game.get_leaderboard()
+        for i, player in enumerate(leaderboard, 1):
+            if i == 1:
+                color = Fore.YELLOW
+                medal = "🥇"
+            elif i == 2:
+                color = Fore.WHITE
+                medal = "🥈"
+            elif i == 3:
+                color = Fore.RED
+                medal = "🥉"
+            else:
+                color = Fore.WHITE
+                medal = f"{i}."
+            
+            board_status = "✓" if player.is_on_board else "✗"
+            print(f"{color}{medal} {player.name}: {player.total_score} points [{board_status}]{Style.RESET_ALL}")
+        
+        print(f"\n{Fore.CYAN}Merci d'avoir joué au Farkle!{Style.RESET_ALL}")
+        input(f"{Fore.CYAN}Appuyez sur Entrée pour continuer...{Style.RESET_ALL}")
     
     def run(self):
         """Lance l'application"""
