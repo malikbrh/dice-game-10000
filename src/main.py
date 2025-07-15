@@ -15,7 +15,7 @@ def main():
         cli = FarkleCLI()
         cli.run()
     except KeyboardInterrupt:
-        print("\n\nAu revoir!")
+        print("\n\nAu revoir et à bientôt. Au plaisir de vous retrouver vite chez Badger qui, on l'espère, incluera Malik comme Full Stack Engineer ;) !")
         sys.exit(0)
     except Exception as e:
         print(f"Erreur inattendue: {e}")
