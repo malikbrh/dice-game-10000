@@ -5,17 +5,19 @@ Point d'entrée principal de l'application
 """
 
 import sys
-from view.cli import FarkleCLI
+
+from src.view.cli import FarkleCLI
 
 
-def main():
+def main() -> None:
     """Fonction principale"""
     try:
         # Créer et lancer l'interface CLI
         cli = FarkleCLI()
         cli.run()
     except KeyboardInterrupt:
-        print("\n\nAu revoir et à bientôt. Au plaisir de vous retrouver vite chez Badger qui, on l'espère, incluera Malik comme Full Stack Engineer ;) !")
+        print("\n\nAu revoir et à bientôt. Au plaisir de vous retrouver vite chez Badger qui, on l'espère, "
+              "incluera Malik comme Full Stack Engineer ;) !")
         sys.exit(0)
     except Exception as e:
         print(f"Erreur inattendue: {e}")
@@ -23,4 +25,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()
